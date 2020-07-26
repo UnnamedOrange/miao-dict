@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <optional>
 #include <mutex>
@@ -90,7 +91,7 @@ public:
 	/// <summary>
 	/// 设置窗口左部坐标。
 	/// </summary>
-	int left(int x)
+	void left(int x)
 	{
 		auto r = get_window_rect();
 		r.left = x;
@@ -99,7 +100,7 @@ public:
 	/// <summary>
 	/// 设置窗口顶部坐标。
 	/// </summary>
-	int top(int y)
+	void top(int y)
 	{
 		auto r = get_window_rect();
 		r.top = y;
@@ -108,7 +109,7 @@ public:
 	/// <summary>
 	/// 设置窗口右部坐标。
 	/// </summary>
-	int right(int x)
+	void right(int x)
 	{
 		auto r = get_window_rect();
 		r.right = x;
@@ -117,7 +118,7 @@ public:
 	/// <summary>
 	/// 设置窗口底部坐标。
 	/// </summary>
-	int bottom(int y)
+	void bottom(int y)
 	{
 		auto r = get_window_rect();
 		r.bottom = y;
@@ -126,7 +127,7 @@ public:
 	/// <summary>
 	/// 设置窗口宽度，保持窗口左部不移动。
 	/// </summary>
-	int width(int cx)
+	void width(int cx)
 	{
 		auto r = get_window_rect();
 		r.right = r.left + cx;
@@ -135,7 +136,7 @@ public:
 	/// <summary>
 	/// 设置窗口高度，保持窗口顶部不移动。
 	/// </summary>
-	int height(int cy)
+	void height(int cy)
 	{
 		auto r = get_window_rect();
 		r.bottom = r.top + cy;
@@ -205,6 +206,30 @@ public:
 	{
 		auto t = get_client_rect();
 		return t.bottom - t.top;
+	}
+
+public:
+	void caption(std::string_view s)
+	{
+		if (!hwnd)
+			throw std::runtime_error("hwnd is nullptr.");
+		if (!SetWindowTextA(hwnd, s.data()))
+			throw std::runtime_error("fail to SetWindowTextA.");
+	}
+	void caption(std::wstring_view s)
+	{
+		if (!hwnd)
+			throw std::runtime_error("hwnd is nullptr.");
+		if (!SetWindowTextW(hwnd, s.data()))
+			throw std::runtime_error("fail to SetWindowTextW.");
+	}
+	std::wstring caption() const
+	{
+		if (!hwnd)
+			throw std::runtime_error("hwnd is nullptr.");
+		std::vector<wchar_t> ret(GetWindowTextLengthW(hwnd) + 1);
+		GetWindowTextW(hwnd, ret.data(), ret.size());
+		return ret.data();
 	}
 
 public:
