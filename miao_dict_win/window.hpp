@@ -4,7 +4,13 @@
 
 #pragma once
 
+#include <string>
+#include <unordered_set>
+#include <optional>
+#include <mutex>
+#include <condition_variable>
 #include <stdexcept>
+#include <typeinfo>
 #include <Windows.h>
 
 /// <summary>
@@ -199,5 +205,130 @@ public:
 	{
 		auto t = get_client_rect();
 		return t.bottom - t.top;
+	}
+
+public:
+	/// <returns>
+	/// 注册窗口时（如果需要）的窗口类名。可以用作窗口的标识。
+	/// </returns>
+	std::string get_class_name() const
+	{
+		std::string_view name = typeid(*this).name();
+		std::string ret;
+		bool st = false;
+		for (size_t i = name.length() - 1; ~i; i--)
+			if (name[i] == ' ')
+			{
+				if (st)	break;
+			}
+			else
+			{
+				st = true;
+				ret.push_back(name[i]);
+			}
+		std::reverse(ret.begin(), ret.end());
+		return ret;
+	}
+
+private:
+	inline static std::mutex mutex_create; // 创建窗口时所用的互斥体，创建窗口的过程必须是串行的。
+	inline static std::condition_variable cv_create; // // 创建窗口时所用的条件变量，用于模拟信号量。创建窗口的过程必须是串行的。
+	inline static window* storage{}; // 创建窗口时所用的全局变量。
+
+private:
+	void register_class()
+	{
+		static std::unordered_set<std::string> registered;
+		auto name = get_class_name();
+		if (registered.count(name))
+			return;
+
+		WNDCLASSEXA wcex{ sizeof(WNDCLASSEXW) };
+		wcex.style = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc = VirtualWindowProc;
+		wcex.cbClsExtra = 0;
+		wcex.cbWndExtra = 0;
+		wcex.hInstance = GetModuleHandleW(nullptr);
+		wcex.hIcon = nullptr;
+		wcex.hIconSm = nullptr;
+		wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
+		wcex.hbrBackground = GetSysColorBrush(COLOR_WINDOW);
+		wcex.lpszMenuName = NULL;
+		wcex.lpszClassName = name.c_str();
+		if (!RegisterClassExA(&wcex))
+			throw std::runtime_error("fail to RegisterClassExA.");
+		registered.insert(name);
+	}
+	static LRESULT CALLBACK VirtualWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+	{
+		window* p = reinterpret_cast<window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+
+		if (!p)
+		{
+			if (!storage)
+				throw std::runtime_error("storage shouldn't be nullptr.");
+			p = storage;
+			SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)p);
+			p->__hwnd = hwnd;
+
+			storage = nullptr;
+			cv_create.notify_one();
+		}
+		LRESULT ret = p->WindowProc(hwnd, message, wParam, lParam);
+
+		if (p && message == WM_DESTROY)
+			p->__hwnd = nullptr;
+
+		return ret;
+	}
+
+protected:
+	virtual INT_PTR WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) = 0;
+
+public:
+	/// <summary>
+	/// 使用 CreateWindowExA 创建窗口。
+	/// </summary>
+	HWND create(HWND hwndParent = nullptr)
+	{
+		std::unique_lock<std::mutex> lock(mutex_create);
+		cv_create.wait(lock, []()->bool
+			{
+				return !storage;
+			});
+		storage = this;
+		lock.unlock();
+
+		register_class();
+		return CreateWindowExA(0,
+			get_class_name().c_str(),
+			"",
+			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+			CW_USEDEFAULT,
+			CW_USEDEFAULT,
+			CW_USEDEFAULT,
+			CW_USEDEFAULT,
+			hwndParent,
+			nullptr,
+			GetModuleHandleW(nullptr),
+			nullptr);
+	}
+
+public:
+	/// <summary>
+	/// 开始窗口消息循环。
+	/// </summary>
+	/// <returns>
+	/// 退出消息的返回值。
+	/// </returns>
+	int message_loop()
+	{
+		MSG msg;
+		while (GetMessageW(&msg, NULL, 0, 0))
+		{
+			TranslateMessage(&msg);
+			DispatchMessageW(&msg);
+		}
+		return (int)msg.wParam;
 	}
 };
