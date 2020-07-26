@@ -209,6 +209,9 @@ public:
 	}
 
 public:
+	/// <returns>
+	/// 设置窗口标题。
+	/// </returns>
 	void caption(std::string_view s)
 	{
 		if (!hwnd)
@@ -216,6 +219,9 @@ public:
 		if (!SetWindowTextA(hwnd, s.data()))
 			throw std::runtime_error("fail to SetWindowTextA.");
 	}
+	/// <returns>
+	/// 设置窗口标题（宽字符）。
+	/// </returns>
 	void caption(std::wstring_view s)
 	{
 		if (!hwnd)
@@ -223,12 +229,15 @@ public:
 		if (!SetWindowTextW(hwnd, s.data()))
 			throw std::runtime_error("fail to SetWindowTextW.");
 	}
-	std::wstring caption() const
+	/// <returns>
+	/// 窗口标题。
+	/// </returns>
+	std::string caption() const
 	{
 		if (!hwnd)
 			throw std::runtime_error("hwnd is nullptr.");
-		std::vector<wchar_t> ret(GetWindowTextLengthW(hwnd) + 1);
-		GetWindowTextW(hwnd, ret.data(), ret.size());
+		std::vector<char> ret(GetWindowTextLengthA(hwnd) + 1);
+		GetWindowTextA(hwnd, ret.data(), ret.size());
 		return ret.data();
 	}
 
@@ -268,12 +277,12 @@ private:
 		if (registered.count(name))
 			return;
 
-		WNDCLASSEXA wcex{ sizeof(WNDCLASSEXW) };
+		WNDCLASSEXA wcex{ sizeof(WNDCLASSEXA) };
 		wcex.style = CS_HREDRAW | CS_VREDRAW;
 		wcex.lpfnWndProc = VirtualWindowProc;
 		wcex.cbClsExtra = 0;
 		wcex.cbWndExtra = 0;
-		wcex.hInstance = GetModuleHandleW(nullptr);
+		wcex.hInstance = GetModuleHandleA(nullptr);
 		wcex.hIcon = nullptr;
 		wcex.hIconSm = nullptr;
 		wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
@@ -286,14 +295,14 @@ private:
 	}
 	static LRESULT CALLBACK VirtualWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		window* p = reinterpret_cast<window*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+		window* p = reinterpret_cast<window*>(GetWindowLongPtrA(hwnd, GWLP_USERDATA));
 
 		if (!p)
 		{
 			if (!storage)
 				throw std::runtime_error("storage shouldn't be nullptr.");
 			p = storage;
-			SetWindowLongPtrW(hwnd, GWLP_USERDATA, (LONG_PTR)p);
+			SetWindowLongPtrA(hwnd, GWLP_USERDATA, (LONG_PTR)p);
 			p->__hwnd = hwnd;
 
 			storage = nullptr;
@@ -312,8 +321,11 @@ protected:
 
 public:
 	/// <summary>
-	/// 使用 CreateWindowExA 创建窗口。
+	/// 使用 CreateWindowExA 创建窗口。注意需要调用 DefWindowProcA。
 	/// </summary>
+	/// <returns>
+	/// 创建的窗口的句柄。
+	/// </returns>
 	HWND create(HWND hwndParent = nullptr)
 	{
 		std::unique_lock<std::mutex> lock(mutex_create);
@@ -335,7 +347,7 @@ public:
 			CW_USEDEFAULT,
 			hwndParent,
 			nullptr,
-			GetModuleHandleW(nullptr),
+			GetModuleHandleA(nullptr),
 			nullptr);
 	}
 
@@ -349,10 +361,10 @@ public:
 	int message_loop()
 	{
 		MSG msg;
-		while (GetMessageW(&msg, NULL, 0, 0))
+		while (GetMessageA(&msg, NULL, 0, 0))
 		{
 			TranslateMessage(&msg);
-			DispatchMessageW(&msg);
+			DispatchMessageA(&msg);
 		}
 		return (int)msg.wParam;
 	}
