@@ -48,7 +48,5 @@ namespace miao::core
 		system(system&&) = delete;
 		system& operator=(const system&) = delete;
 		system& operator=(system&&) = delete;
-
-
 	};
 }
