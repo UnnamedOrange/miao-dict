@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\jsoncpp">
+      <UniqueIdentifier>{33ee1c6f-a461-492a-8385-d07f0668ab57}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.hpp">
@@ -30,5 +33,24 @@
     <ClInclude Include="library.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\dep\jsoncpp\src\lib_json\json_tool.h">
+      <Filter>源文件\jsoncpp</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\dep\jsoncpp\src\lib_json\json_writer.cpp">
+      <Filter>源文件\jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dep\jsoncpp\src\lib_json\json_reader.cpp">
+      <Filter>源文件\jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\dep\jsoncpp\src\lib_json\json_value.cpp">
+      <Filter>源文件\jsoncpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\dep\jsoncpp\src\lib_json\json_valueiterator.inl">
+      <Filter>源文件\jsoncpp</Filter>
+    </None>
   </ItemGroup>
 </Project>

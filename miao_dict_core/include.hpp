@@ -4,6 +4,8 @@
 #include <string>
 #include <stdexcept>
 
+#include <json/json.h>
+
 namespace miao::core
 {
 	using id_t = unsigned long long;
