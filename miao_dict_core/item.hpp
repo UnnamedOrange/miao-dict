@@ -26,6 +26,13 @@ namespace miao::core
 		uint_t n_pronounce{};
 
 		// 查询
-		uint_t n_query;
+		uint_t n_query{};
+	};
+
+	class raw_item
+	{
+	public:
+		std::u32string origin;
+		uint_t frequency;
 	};
 }

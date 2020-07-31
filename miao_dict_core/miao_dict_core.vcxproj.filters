@@ -27,5 +27,11 @@
     <ClInclude Include="include.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="system.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="library.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

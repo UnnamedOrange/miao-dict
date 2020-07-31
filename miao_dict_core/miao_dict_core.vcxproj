@@ -163,6 +163,8 @@
     <ClInclude Include="core.hpp" />
     <ClInclude Include="include.hpp" />
     <ClInclude Include="item.hpp" />
+    <ClInclude Include="library.hpp" />
+    <ClInclude Include="system.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
