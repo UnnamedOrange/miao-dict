@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <vector>
 #include <string>
 #include <string_view>
 #include <unordered_set>
@@ -285,7 +286,7 @@ private:
 		wcex.hInstance = GetModuleHandleA(nullptr);
 		wcex.hIcon = nullptr;
 		wcex.hIconSm = nullptr;
-		wcex.hCursor = LoadCursorW(NULL, IDC_ARROW);
+		wcex.hCursor = LoadCursorA(NULL, IDC_ARROW);
 		wcex.hbrBackground = GetSysColorBrush(COLOR_WINDOW);
 		wcex.lpszMenuName = NULL;
 		wcex.lpszClassName = name.c_str();
