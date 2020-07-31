@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30320.27
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miao_dict_core", "miao_dict_core\miao_dict_core.vcxproj", "{2AF0AFF2-FB26-44F5-A746-DBB1D27431F1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miao_dict_cui", "miao_dict_cui\miao_dict_cui.vcxproj", "{DFE4E4EF-C45C-4936-A24A-DC73953614E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{2AF0AFF2-FB26-44F5-A746-DBB1D27431F1}.Release|x64.Build.0 = Release|x64
 		{2AF0AFF2-FB26-44F5-A746-DBB1D27431F1}.Release|x86.ActiveCfg = Release|Win32
 		{2AF0AFF2-FB26-44F5-A746-DBB1D27431F1}.Release|x86.Build.0 = Release|Win32
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Debug|x64.ActiveCfg = Debug|x64
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Debug|x64.Build.0 = Debug|x64
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Debug|x86.ActiveCfg = Debug|Win32
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Debug|x86.Build.0 = Debug|Win32
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Release|x64.ActiveCfg = Release|x64
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Release|x64.Build.0 = Release|x64
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Release|x86.ActiveCfg = Release|Win32
+		{DFE4E4EF-C45C-4936-A24A-DC73953614E5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
