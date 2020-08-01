@@ -33,7 +33,7 @@ namespace miao::core
 	{
 	public:
 		std::u32string origin;
-		uint_t frequency;
+		uint_t frequency{};
 
 	public:
 		virtual std::string to_string() const override

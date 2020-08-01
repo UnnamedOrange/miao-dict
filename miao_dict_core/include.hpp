@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <array>
 #include <stdexcept>
 #include <type_traits>
 
