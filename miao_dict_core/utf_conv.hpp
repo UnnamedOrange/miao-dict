@@ -56,7 +56,7 @@ namespace miao
 
 			char32_t ret{};
 			size_t len{};
-			char_or_char8_t b{ src.front() };
+			std::make_unsigned_t<char_or_char8_t> b = src.front();
 
 			if (b < 0x80) // 单字符
 				return { b, 1 };

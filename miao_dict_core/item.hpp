@@ -50,8 +50,7 @@ namespace miao::core
 			try
 			{
 				frequency = root["frequency"].asUInt64();
-				std::u8string origin_utf8 = reinterpret_cast<const char8_t*>(root["origin"].asCString());
-				origin = utf_conv<char8_t, char32_t>::convert(origin_utf8);
+				origin = utf_conv<char, char32_t>::convert(root["origin"].asCString());
 			}
 			catch (...)
 			{
