@@ -29,10 +29,47 @@ namespace miao::core
 		uint_t n_query{};
 	};
 
-	class raw_item
+	class raw_item final : public serializable_base
 	{
 	public:
 		std::u32string origin;
 		uint_t frequency;
+
+	public:
+		virtual std::string to_string() const override
+		{
+			Json::Value root;
+			root["frequency"] = frequency;
+			root["origin"] = utf_conv<char32_t, char>::convert(origin);
+
+			std::ostringstream ss;
+			{
+				Json::StreamWriterBuilder builder;
+				std::unique_ptr<Json::StreamWriter> const writer(builder.newStreamWriter());
+				writer->write(root, &ss);
+			}
+			return ss.str();
+		}
+		virtual void from_string(std::string_view str) override
+		{
+			Json::Value root;
+			{
+				Json::CharReaderBuilder builder;
+				std::unique_ptr<Json::CharReader> const reader(builder.newCharReader());
+				if (!reader->parse(str.data(), str.data() + str.size(), &root, nullptr))
+					throw parse_error("fail to reader->parse.");
+			}
+
+			try
+			{
+				frequency = root["frequency"].asUInt64();
+				std::string origin_utf8 = root["origin"].asCString();
+				origin = utf_conv<char, char32_t>::convert(origin_utf8);
+			}
+			catch (...)
+			{
+				throw deserialize_error("fail to translate the string into raw_item.");
+			}
+		}
 	};
 }
