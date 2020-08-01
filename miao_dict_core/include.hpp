@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <string_view>
 #include <stdexcept>
 #include <type_traits>
 
@@ -35,6 +36,7 @@ namespace miao::core
 	/// 反序列化时存在数据无法正确反序列化。
 	/// </summary>
 	class deserialize_error : public std::exception { using std::exception::exception; };
+
 #if __stdge20
 	template<typename T>
 	concept serializable = requires(T a)

@@ -167,6 +167,7 @@
     <ClInclude Include="item.hpp" />
     <ClInclude Include="library.hpp" />
     <ClInclude Include="system.hpp" />
+    <ClInclude Include="utf_conv.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\dep\jsoncpp\src\lib_json\json_reader.cpp" />
