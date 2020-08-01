@@ -163,6 +163,7 @@
   <ItemGroup>
     <ClInclude Include="..\dep\jsoncpp\src\lib_json\json_tool.h" />
     <ClInclude Include="core.hpp" />
+    <ClInclude Include="cppver.hpp" />
     <ClInclude Include="include.hpp" />
     <ClInclude Include="item.hpp" />
     <ClInclude Include="library.hpp" />

@@ -1,6 +1,21 @@
 ﻿#pragma once
 
-#include "include.hpp"
+#include <vector>
+#include <string>
+#include <string_view>
+#include <array>
+#include <stdexcept>
+#include <type_traits>
+#include "cppver.hpp"
+
+#if !__stdge20
+using char8_t = char;
+namespace std
+{
+	using u8string = std::basic_string<char8_t>;
+	using u8string_view = std::basic_string_view<char8_t>;
+}
+#endif
 
 namespace miao
 {
@@ -13,7 +28,7 @@ namespace miao
 	class utf_conv
 	{
 	public:
-		static std::basic_string<des_t> convert(std::basic_string_view<src_t> src)
+		[[nodiscard]] static std::basic_string<des_t> convert(std::basic_string_view<src_t> src)
 		{
 			static_assert(false, "src_t and des_t is invalid.");
 		}
@@ -84,7 +99,7 @@ namespace miao
 			return { ret, len };
 		}
 	public:
-		static std::u32string convert(std::basic_string_view<char_or_char8_t> src)
+		[[nodiscard]] static std::u32string convert(std::basic_string_view<char_or_char8_t> src)
 #if __stdge20
 			requires std::is_same_v<char_or_char8_t, char> || std::is_same_v<char_or_char8_t, char8_t>
 #endif
@@ -147,7 +162,7 @@ namespace miao
 			return { ret, len };
 		}
 	public:
-		static std::basic_string<char_or_char8_t> convert(std::u32string_view src)
+		[[nodiscard]] static std::basic_string<char_or_char8_t> convert(std::u32string_view src)
 #if __stdge20
 			requires std::is_same_v<char_or_char8_t, char> || std::is_same_v<char_or_char8_t, char8_t>
 #endif
@@ -173,4 +188,8 @@ namespace miao
 			return ret.data();
 		}
 	};
+
+	[[nodiscard]] inline std::u8string operator"" _u8(const char32_t* _Str, size_t _Len) {
+		return utf_conv<char32_t, char8_t>::convert(std::u32string_view(_Str, _Len));
+	}
 }
