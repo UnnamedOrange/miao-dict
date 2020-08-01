@@ -4,6 +4,7 @@
 #include <string>
 #include <string_view>
 #include <array>
+#include <tuple>
 #include <stdexcept>
 #include <type_traits>
 #include "cppver.hpp"
@@ -25,21 +26,11 @@ namespace miao
 	/// <typeparam name="src_t">源的字符类型。</typeparam>
 	/// <typeparam name="des_t">目标字符类型。如果是宽字符，使用小端编码。</typeparam>
 	template <typename src_t, typename des_t>
-	class utf_conv
-	{
-	public:
-		[[nodiscard]] static std::basic_string<des_t> convert(std::basic_string_view<src_t> src)
-		{
-			static_assert(false, "src_t and des_t is invalid.");
-		}
-	};
+	class utf_conv {};
 	/// <summary>
 	/// 在 UTF 编码间进行转换时出错。
 	/// </summary>
-	class utf_conv_error : public std::exception
-	{
-		using std::exception::exception;
-	};
+	class utf_conv_error : public std::runtime_error { using std::runtime_error::runtime_error; };
 
 	/// <summary>
 	/// 从 UTF-8 转换到 UTF-32（LE）。

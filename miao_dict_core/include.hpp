@@ -7,6 +7,7 @@
 #include <array>
 #include <stdexcept>
 #include <type_traits>
+#include <filesystem>
 
 #include <json/json.h>
 
@@ -34,6 +35,9 @@ namespace miao::core
 		/// <param name="filename">文件名。</param>
 		void from_file(dbcs_string_view filename)
 		{
+			if (!std::filesystem::exists(filename))
+				throw std::runtime_error("file doesn't exists.");
+
 			std::fstream fs(filename.data());
 			fs.seekg(0, std::ios::end);
 			size_t len = fs.tellg();
@@ -46,11 +50,11 @@ namespace miao::core
 	/// <summary>
 	/// 反序列化时 JSON 解析错误。
 	/// </summary>
-	class parse_error : public std::exception { using std::exception::exception; };
+	class parse_error : public std::runtime_error { using std::runtime_error::runtime_error; };
 	/// <summary>
 	/// 反序列化时存在数据无法正确反序列化。
 	/// </summary>
-	class deserialize_error : public std::exception { using std::exception::exception; };
+	class deserialize_error : public std::runtime_error { using std::runtime_error::runtime_error; };
 
 #if __stdge20
 	template<typename T>
