@@ -26,7 +26,7 @@ namespace miao::core
 	class serializable_base
 	{
 	public:
-		virtual std::u8string to_string() const = 0;
+		[[nodiscard]] virtual std::u8string to_string() const = 0;
 		virtual void from_string(std::u8string_view str) = 0;
 		/// <summary>
 		/// 将整个文件内容作为参数调用 from_string。
@@ -34,8 +34,7 @@ namespace miao::core
 		/// <param name="filename">文件名。</param>
 		void from_file(dbcs_string_view filename)
 		{
-			std::fstream fs(filename.data(), std::ios::in | std::ios::binary);
-			fs.is_open();
+			std::fstream fs(filename.data());
 			fs.seekg(0, std::ios::end);
 			size_t len = fs.tellg();
 			fs.seekg(0, std::ios::beg);
@@ -62,4 +61,39 @@ namespace miao::core
 	};
 	static_assert(serializable<serializable_base>);
 #endif
+}
+
+namespace Json
+{
+	/// <summary>
+	/// 将字符串（std::u8string_view）转换为 Json::Value。
+	/// </summary>
+	/// <param name="str">源字符串。</param>
+	/// <returns>转换后的 Json::Value。</returns>
+	[[nodiscard]] inline Value read(std::u8string_view str)
+	{
+		Value ret;
+		CharReaderBuilder builder;
+		std::unique_ptr<CharReader> const reader(builder.newCharReader());
+		if (Json::String error;
+			!reader->parse(reinterpret_cast<const char*>(str.data()),
+				reinterpret_cast<const char*>(str.data()) + str.size(), &ret, &error))
+			throw miao::core::parse_error(("fail to reader->parse." + error).c_str());
+		return ret;
+	}
+	/// <summary>
+	/// 将 Json::Value 转换为字符串（std::u8string）。
+	/// </summary>
+	/// <param name="v">Json::Value 类型的常值引用。</param>
+	/// <returns>转换后的字符串。</returns>
+	[[nodiscard]] inline std::u8string write(const Value& v)
+	{
+		std::ostringstream ss;
+		{
+			Json::StreamWriterBuilder builder;
+			std::unique_ptr<Json::StreamWriter> const writer(builder.newStreamWriter());
+			writer->write(v, &ss);
+		}
+		return std::u8string(reinterpret_cast<const char8_t*>(ss.str().c_str()));
+	}
 }

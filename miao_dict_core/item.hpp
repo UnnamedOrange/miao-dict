@@ -36,31 +36,16 @@ namespace miao::core
 		uint_t frequency{};
 
 	public:
-		virtual std::u8string to_string() const override
+		[[nodiscard]] virtual std::u8string to_string() const override
 		{
 			Json::Value root;
 			root["frequency"] = frequency;
 			root["origin"] = utf_conv<char32_t, char>::convert(origin);
-
-			std::ostringstream ss;
-			{
-				Json::StreamWriterBuilder builder;
-				std::unique_ptr<Json::StreamWriter> const writer(builder.newStreamWriter());
-				writer->write(root, &ss);
-			}
-			return std::u8string(reinterpret_cast<const char8_t*>(ss.str().c_str()));
+			return Json::write(root);
 		}
 		virtual void from_string(std::u8string_view str) override
 		{
-			Json::Value root;
-			{
-				Json::CharReaderBuilder builder;
-				std::unique_ptr<Json::CharReader> const reader(builder.newCharReader());
-				if (Json::String error;
-					!reader->parse(reinterpret_cast<const char*>(str.data()),
-					reinterpret_cast<const char*>(str.data()) + str.size(), &root, &error))
-					throw parse_error(("fail to reader->parse." + error).c_str());
-			}
+			Json::Value root = Json::read(str);
 
 			try
 			{
