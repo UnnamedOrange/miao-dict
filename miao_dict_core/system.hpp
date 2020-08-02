@@ -48,5 +48,19 @@ namespace miao::core
 		system(system&&) = delete;
 		system& operator=(const system&) = delete;
 		system& operator=(system&&) = delete;
+
+	private:
+		std::filesystem::path _working_dir; // 工作目录。
+	public:
+		const std::filesystem::path& working_dir{ _working_dir }; // 工作目录。
+		/// <summary>
+		/// 设置工作目录。会自动设置路径中的分隔符。
+		/// </summary>
+		/// <param name="path">新的工作目录。</param>
+		void set_working_dir(std::filesystem::path path)
+		{
+			path.make_preferred();
+			_working_dir = path;
+		}
 	};
 }
