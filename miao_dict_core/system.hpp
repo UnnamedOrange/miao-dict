@@ -58,7 +58,7 @@ namespace miao::core
 		/// </summary>
 		void construct()
 		{
-			_working_dir = config::atom()->working_dir();
+			_working_dir = config::view()->working_dir();
 		}
 
 	private:
@@ -75,20 +75,26 @@ namespace miao::core
 			_working_dir = path;
 		}
 
-		/// <returns>工作目录/miao_dict。</returns>
+		/// <returns>
+		/// 工作目录/miao_dict。
+		/// </returns>
 		std::filesystem::path root_dir() const
 		{
 			return working_dir / "miao_dict";
 		}
 		/// <param name="id">库 id。</param>
-		/// <returns>工作目录/miao_dict/library(/id)。</returns>
+		/// <returns>
+		/// 工作目录/miao_dict/library(/id)。
+		/// </returns>
 		std::filesystem::path library_dir(id_t id = std::numeric_limits<id_t>::max()) const
 		{
 			if (id == std::numeric_limits<id_t>::max())
 				return root_dir() / "library";
 			return root_dir() / "library" / std::to_string(id);
 		}
-		/// <returns>工作目录/miao_dict/sentence。</returns>
+		/// <returns>
+		/// 工作目录/miao_dict/sentence。
+		/// </returns>
 		std::filesystem::path sentence_dir() const
 		{
 			return root_dir() / "sentence";
