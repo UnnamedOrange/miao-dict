@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "include.hpp"
+#include "config.hpp"
 #include "item.hpp"
 
 namespace miao::core
@@ -39,6 +40,8 @@ namespace miao::core
 			if (__address_instance)
 				throw std::runtime_error("__address_instance should be nullptr.");
 			__address_instance = this;
+
+			construct();
 		}
 		~system()
 		{
@@ -48,6 +51,15 @@ namespace miao::core
 		system(system&&) = delete;
 		system& operator=(const system&) = delete;
 		system& operator=(system&&) = delete;
+
+	private:
+		/// <summary>
+		/// 在构造函数中调用，用于初始化较复杂对象或全局设置相关对象。
+		/// </summary>
+		void construct()
+		{
+			_working_dir = config::atom()->working_dir();
+		}
 
 	private:
 		std::filesystem::path _working_dir; // 工作目录。

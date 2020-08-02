@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <type_traits>
 #include <filesystem>
+#include <mutex>
+#include <atomic>
 
 #include <json/json.h>
 
@@ -84,7 +86,7 @@ namespace miao::core
 			from_json(Json::read(str));
 		}
 		/// <summary>
-		/// 将整个文件内容作为参数调用 from_string。
+		/// 将整个文件内容作为参数调用 from_string。如果文件不存在，将抛出 std::runtime_error。
 		/// </summary>
 		/// <param name="filename">文件名。</param>
 		void from_file(std::filesystem::path filename)
