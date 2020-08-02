@@ -49,7 +49,7 @@ namespace miao
 			size_t len{};
 			std::make_unsigned_t<char_or_char8_t> b = src.front();
 
-			if (b < 0x80) // 单字符
+			if (b < 0x80) // 单字符。
 				return { b, 1 };
 			else if (b < 0xC0 || b > 0xFD) // 非法值。
 				throw utf_conv_error("fail to convert_once. invalid utf-8 char.");

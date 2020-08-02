@@ -95,6 +95,7 @@ namespace Json
 		std::ostringstream ss;
 		{
 			Json::StreamWriterBuilder builder;
+			builder.settings_["emitUTF8"] = true;
 			std::unique_ptr<Json::StreamWriter> const writer(builder.newStreamWriter());
 			writer->write(v, &ss);
 		}
