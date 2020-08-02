@@ -50,7 +50,7 @@
 一个句子包含以下属性：
 
 - id。注意这个 id 是全局的 id，对于意思相同的句子，应当在不同的库中共享一个 id。
-- 句子内容（content），字符串。
+- 句子内容（content），列表，每个元素形如 `(lib_id, content)`。
 
 #### 语音库（pronunciations）
 

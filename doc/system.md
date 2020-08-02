@@ -7,3 +7,25 @@
 ## 工作目录
 
 程序的所有文件均保存在工作目录（`working_dir`）下的 `miao_dict` 文件夹中。默认工作目录为当前目录。 
+
+目录结构。
+
+```
+working_dir
+|--miao_dict
+|  |--library
+|  |  |--0                   # local
+|  |  |  |--items
+|  |  |  |  |--0.json
+|  |  |  |  |--1.json
+|  |  |  |--pronunciations
+|  |  |  |  |--...           # TODO
+|  |  |  |--raws.json
+|  |  |  |--raw_items.json
+|  |  |--1                   # others
+|  |  |  |--...
+|  |--sentence
+|  |  |--0.json
+|  |  |--1.json
+```
+
