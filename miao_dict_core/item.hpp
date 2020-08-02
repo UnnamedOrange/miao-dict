@@ -29,7 +29,7 @@ namespace miao::core
 		uint_t n_query{};
 
 	public:
-		[[nodiscard]] virtual std::u8string to_string() const override
+		[[nodiscard]] virtual Json::Value to_json() const override
 		{
 			Json::Value root;
 			root["id"] = id;
@@ -74,55 +74,53 @@ namespace miao::core
 			root["n_pronounce"] = n_pronounce;
 			root["n_query"] = n_query;
 
-			return Json::write(root);
+			return root;
 		}
-		virtual void from_string(std::u8string_view str) override
+		virtual void from_json(const Json::Value& value) override
 		{
-			Json::Value root = Json::read(str);
-
 			try
 			{
-				id = root["id"].asUInt64();
-				origin = utf_conv<char, char32_t>::convert(root["origin"].asCString());
+				id = value["id"].asUInt64();
+				origin = utf_conv<char, char32_t>::convert(value["origin"].asCString());
 
-				variants.resize(root["variants"].size());
+				variants.resize(value["variants"].size());
 				for (size_t i = 0; i < variants.size(); i++)
 					variants[i] = utf_conv<char, char32_t>::convert(
-						root["variants"][static_cast<Json::ArrayIndex>(i)].asCString());
+						value["variants"][static_cast<Json::ArrayIndex>(i)].asCString());
 
-				notations.resize(root["notations"].size());
+				notations.resize(value["notations"].size());
 				for (size_t i = 0; i < notations.size(); i++)
 					notations[i] = utf_conv<char, char32_t>::convert(
-						root["notations"][static_cast<Json::ArrayIndex>(i)].asCString());
+						value["notations"][static_cast<Json::ArrayIndex>(i)].asCString());
 
-				translations.resize(root["translations"].size());
+				translations.resize(value["translations"].size());
 				for (size_t i = 0; i < translations.size(); i++)
 				{
-					const Json::Value& node = root["translations"][static_cast<Json::ArrayIndex>(i)];
+					const Json::Value& node = value["translations"][static_cast<Json::ArrayIndex>(i)];
 					translations[i] = { node["id"].asUInt64(),
 						node["lib_id"].asUInt64(),
 						utf_conv<char, char32_t>::convert(node["tag"].asCString()),
 						utf_conv<char, char32_t>::convert(node["meaning"].asCString()) };
 				}
 
-				pronunciations.resize(root["pronunciations"].size());
+				pronunciations.resize(value["pronunciations"].size());
 				for (size_t i = 0; i < pronunciations.size(); i++)
-					pronunciations[i] = root["pronunciations"][static_cast<Json::ArrayIndex>(i)].asUInt64();
+					pronunciations[i] = value["pronunciations"][static_cast<Json::ArrayIndex>(i)].asUInt64();
 
-				sentences.resize(root["sentences"].size());
+				sentences.resize(value["sentences"].size());
 				for (size_t i = 0; i < sentences.size(); i++)
 				{
-					const Json::Value& node = root["sentences"][static_cast<Json::ArrayIndex>(i)];
+					const Json::Value& node = value["sentences"][static_cast<Json::ArrayIndex>(i)];
 					sentences[i] = { node["id"].asUInt64(),
 						node["trans_id"].asUInt64() };
 				}
 
-				showing_time = root["showing_time"].asUInt64();
-				n_skips = root["n_skips"].asUInt64();
-				n_flick = root["n_flick"].asUInt64();
-				n_pause = root["n_pause"].asUInt64();
-				n_pronounce = root["n_pronounce"].asUInt64();
-				n_query = root["n_query"].asUInt64();
+				showing_time = value["showing_time"].asUInt64();
+				n_skips = value["n_skips"].asUInt64();
+				n_flick = value["n_flick"].asUInt64();
+				n_pause = value["n_pause"].asUInt64();
+				n_pronounce = value["n_pronounce"].asUInt64();
+				n_query = value["n_query"].asUInt64();
 			}
 			catch (...)
 			{
@@ -138,21 +136,19 @@ namespace miao::core
 		uint_t frequency{};
 
 	public:
-		[[nodiscard]] virtual std::u8string to_string() const override
+		[[nodiscard]] virtual Json::Value to_json() const override
 		{
 			Json::Value root;
 			root["frequency"] = frequency;
 			root["origin"] = utf_conv<char32_t, char>::convert(origin);
-			return Json::write(root);
+			return root;
 		}
-		virtual void from_string(std::u8string_view str) override
+		virtual void from_json(const Json::Value& value) override
 		{
-			Json::Value root = Json::read(str);
-
 			try
 			{
-				frequency = root["frequency"].asUInt64();
-				origin = utf_conv<char, char32_t>::convert(root["origin"].asCString());
+				frequency = value["frequency"].asUInt64();
+				origin = utf_conv<char, char32_t>::convert(value["origin"].asCString());
 			}
 			catch (...)
 			{
