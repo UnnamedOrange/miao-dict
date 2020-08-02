@@ -22,6 +22,7 @@ working_dir
 |  |  |  |  |--...           # TODO
 |  |  |  |--raws.json
 |  |  |  |--raw_items.json
+|  |  |  |--library.json
 |  |  |--1                   # others
 |  |  |  |--...
 |  |--sentence

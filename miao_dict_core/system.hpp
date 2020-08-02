@@ -143,11 +143,6 @@ namespace miao::core
 			if (!demand_directory(sentence_dir()))
 				return false;
 
-			// 创建本地库文件夹。
-			if (!demand_directory(library_dir(0)))
-				return false;
-
-			// TODO: 创建配置文件。
 			return true;
 		}
 	};
