@@ -62,8 +62,6 @@ namespace miao::core
 {
 	using id_t = unsigned long long;
 	using uint_t = unsigned long long;
-	using dbcs_string = std::string;
-	using dbcs_string_view = std::string_view;
 
 	/// <summary>
 	/// 可序列化类型基类。一个类型如果是可序列化的，它应该是 serializale 的子类。
@@ -85,18 +83,27 @@ namespace miao::core
 		/// 将整个文件内容作为参数调用 from_string。
 		/// </summary>
 		/// <param name="filename">文件名。</param>
-		void from_file(dbcs_string_view filename)
+		void from_file(std::filesystem::path filename)
 		{
+			filename.make_preferred();
 			if (!std::filesystem::exists(filename))
 				throw std::runtime_error("file doesn't exists.");
 
-			std::fstream fs(filename.data());
+			std::ifstream fs(filename);
 			fs.seekg(0, std::ios::end);
 			size_t len = fs.tellg();
 			fs.seekg(0, std::ios::beg);
 			std::vector<char8_t> buf(len + 1);
 			fs.read(reinterpret_cast<char*>(buf.data()), len);
 			from_string(buf.data());
+		}
+		void to_file(std::filesystem::path filename)
+		{
+			filename.make_preferred();
+			
+			std::ofstream fs(filename);
+			std::u8string str = to_string();
+			fs.write(reinterpret_cast<char*>(str.data()), str.length());
 		}
 	};
 	/// <summary>
