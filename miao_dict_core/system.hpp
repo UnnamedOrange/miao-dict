@@ -58,7 +58,8 @@ namespace miao::core
 		/// </summary>
 		void construct()
 		{
-			_working_dir = config::view()->working_dir();
+			auto cfg = config::view();
+			set_working_dir(cfg->working_dir());
 		}
 
 	private:
