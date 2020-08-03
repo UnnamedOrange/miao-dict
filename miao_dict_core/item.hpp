@@ -17,7 +17,6 @@ namespace miao::core
 		std::vector<std::u32string> variants;
 		std::vector<std::u32string> notations;
 		std::vector<std::tuple<id_t, id_t, std::u32string, std::u32string>> translations; // (id, lib_id, tag, meaning)
-		std::vector<id_t> pronunciations;
 		std::vector<std::tuple<id_t, id_t>> sentences; // (id, trans_id)
 
 		// 常驻显示
@@ -58,10 +57,6 @@ namespace miao::core
 				root["translations"].append(trans);
 			}
 
-			root["pronunciations"].resize(0);
-			for (const auto& t : pronunciations)
-				root["pronunciations"].append(t);
-
 			root["sentences"].resize(0);
 			for (const auto& t : sentences)
 			{
@@ -86,7 +81,7 @@ namespace miao::core
 			try
 			{
 				Json::value_assign(origin, value["origin"]);
-				Json::value_assign(id, value["id"]);
+				id = value["id"].asUInt64();
 
 				variants.resize(value["variants"].size());
 				for (size_t i = 0; i < variants.size(); i++)
@@ -100,37 +95,33 @@ namespace miao::core
 				for (size_t i = 0; i < translations.size(); i++)
 				{
 					const Json::Value& node = value["translations"][static_cast<Json::ArrayIndex>(i)];
-					translations[i] = { std::get<id_t>(Json::value_cast(node["id"])),
-						std::get<id_t>(Json::value_cast(node["lib_id"])),
+					translations[i] = { node["id"].asUInt64(),
+						node["lib_id"].asUInt64(),
 						std::get<std::u32string>(Json::value_cast(node["tag"])),
 						std::get<std::u32string>(Json::value_cast(node["meaning"])) };
 				}
-
-				pronunciations.resize(value["pronunciations"].size());
-				for (size_t i = 0; i < pronunciations.size(); i++)
-					Json::value_assign(pronunciations[i], value["pronunciations"][static_cast<Json::ArrayIndex>(i)]);
 
 				sentences.resize(value["sentences"].size());
 				for (size_t i = 0; i < sentences.size(); i++)
 				{
 					const Json::Value& node = value["sentences"][static_cast<Json::ArrayIndex>(i)];
-					sentences[i] = { std::get<id_t>(Json::value_cast(node["id"])),
-						std::get<id_t>(Json::value_cast(node["trans_id"])) };
+					sentences[i] = { node["id"].asUInt64(),
+						node["trans_id"].asUInt64() };
 				}
 
-				Json::value_assign(showing_time, value["showing_time"]);
-				Json::value_assign(n_skips, value["n_skips"]);
-				Json::value_assign(n_flick, value["n_flick"]);
-				Json::value_assign(n_pause, value["n_pause"]);
-				Json::value_assign(n_pronounce, value["n_pronounce"]);
-				Json::value_assign(n_query, value["n_query"]);
+				showing_time = value["showing_time"].asUInt64();
+				n_skips = value["n_skips"].asUInt64();
+				n_flick = value["n_flick"].asUInt64();
+				n_pause = value["n_pause"].asUInt64();
+				n_pronounce = value["n_pronounce"].asUInt64();
+				n_query = value["n_query"].asUInt64();
 
 				ver_tag = 1;
 			}
 			catch (...)
 			{
 				if (!ver_tag)
-					throw deserialize_error("fail to translate the string into raw_item.");
+					throw deserialize_error("fail to translate the json into raw_item.");
 			}
 		}
 	};
@@ -160,13 +151,13 @@ namespace miao::core
 			try
 			{
 				Json::value_assign(origin, value["origin"]);
-				Json::value_assign(frequency, value["frequency"]);
+				frequency = value["frequency"].asUInt64();
 				ver_tag = 1;
 			}
 			catch (...)
 			{
 				if (!ver_tag)
-					throw deserialize_error("fail to translate the string into raw_item.");
+					throw deserialize_error("fail to translate the json into raw_item.");
 			}
 		}
 	};

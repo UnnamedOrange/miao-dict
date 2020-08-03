@@ -2,6 +2,7 @@
 
 #include "include.hpp"
 #include "item.hpp"
+#include "passage.hpp"
 
 namespace miao::core
 {
@@ -22,7 +23,7 @@ namespace miao::core
 		std::vector<raw_item> raw_items;
 
 		// raw
-		std::vector<std::u32string> passages;
+		std::vector<passage> passages;
 
 		// pronunciations
 		// TODO
@@ -41,15 +42,15 @@ namespace miao::core
 			ver_tag = 0;
 			try
 			{
-				Json::value_assign(id, value["id"]);
+				id = value["id"].asUInt64();
 				Json::value_assign(tag, value["tag"]);
-				Json::value_assign(tag, value["lang"]);
+				Json::value_assign(lang, value["lang"]);
 				ver_tag = 1;
 			}
 			catch (...)
 			{
 				if (!ver_tag)
-					throw deserialize_error("fail to translate the string into library.");
+					throw deserialize_error("fail to translate the json into library.");
 			}
 		}
 	};

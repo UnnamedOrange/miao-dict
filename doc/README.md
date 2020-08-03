@@ -41,7 +41,16 @@
 
 ##### 片段（passage）
 
-一个长字符串。可以使用程序辅助从片段中提取句子（sencence）或未处理过的词（raw_item）。
+一个片段包含以下属性：
+
+- id。
+- 内容（content），字符串。
+
+版本 2 扩展了以下属性：
+
+- 摘要（abstract），字符串。
+
+可以使用程序辅助从片段中提取句子（sencence）或未处理过的词（raw_item）。
 
 #### 语音库（pronunciations）
 

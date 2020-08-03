@@ -168,6 +168,7 @@
     <ClInclude Include="include.hpp" />
     <ClInclude Include="item.hpp" />
     <ClInclude Include="library.hpp" />
+    <ClInclude Include="passage.hpp" />
     <ClInclude Include="system.hpp" />
     <ClInclude Include="utf_conv.hpp" />
   </ItemGroup>

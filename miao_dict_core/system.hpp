@@ -2,7 +2,7 @@
 
 #include "include.hpp"
 #include "config.hpp"
-#include "item.hpp"
+#include "library.hpp"
 
 namespace miao::core
 {
@@ -210,16 +210,16 @@ namespace miao::core
 			return true;
 		}
 		/// <summary>
-		/// 要求指定路径是一个合法的存有 item 的文件。该函数会尝试修复文件中缺失的信息（如新版本中的信息），并总是会重写这个文件。
+		/// 要求指定路径是一个合法的存有 item 的文件。该函数会尝试修复文件中缺失的信息（如新版本中的信息），并在尝试修复后会重写这个文件。
 		/// </summary>
 		/// <param name="p">指定路径。</param>
 		/// <returns>如果返回 true，则保证此时文件内容能够完全被正确加载。否则返回 false。</returns>
 		bool demand_item(std::filesystem::path p)
 		{
-			item temp_item;
+			item ti;
 			try
 			{
-				temp_item.from_file(p);
+				ti.from_file(p);
 			}
 			catch (const parse_error&) // 认为该文件损坏，直接失败。
 			{
@@ -234,14 +234,75 @@ namespace miao::core
 				return false;
 			}
 
-			if (temp_item.ver_tag < 1)
+			bool need_repair = ti.ver_tag != ti.latest_ver_tag;
+			try
 			{
-				if (temp_item.origin.empty()) // 空单词，直接失败。
-					return false;
-				temp_item.id = std::stoi(p.filename().replace_extension()); // 修复 id。
+				ti.id = std::stoi(p.filename().replace_extension()); // 修复 id。
+			}
+			catch (const std::invalid_argument&) // 文件名不表示一个有效 id。
+			{
+				return false;
 			}
 
-			temp_item.to_file(p); // 重写入。
+			if (ti.ver_tag < 1)
+			{
+				if (ti.origin.empty()) // 空单词，直接失败。
+					return false;
+				ti.ver_tag = 1;
+			}
+
+			if (need_repair)
+				ti.to_file(p); // 重写入。
+			return true;
+		}
+		/// <summary>
+		/// 要求指定路径是一个合法的存有 passage 的文件。该函数会尝试修复文件中缺失的信息（如新版本中的信息），并在尝试修复后会重写这个文件。
+		/// </summary>
+		/// <param name="p">指定路径。</param>
+		/// <returns>如果返回 true，则保证此时文件内容能够完全被正确加载。否则返回 false。</returns>
+		bool demand_passage(std::filesystem::path p)
+		{
+			passage tp;
+			try
+			{
+				tp.from_file(p);
+			}
+			catch (const parse_error&) // 认为该文件损坏，直接失败。
+			{
+				return false;
+			}
+			catch (const deserialize_error&) // 在之后检查 ver_tag。
+			{
+
+			}
+			catch (const std::runtime_error&) // 未知的其他错误，直接失败。
+			{
+				return false;
+			}
+
+			bool need_repair = tp.ver_tag != tp.latest_ver_tag;
+			try
+			{
+				tp.id = std::stoi(p.filename().replace_extension()); // 修复 id。
+			}
+			catch (const std::invalid_argument&) // 文件名不表示一个有效 id。
+			{
+				return false;
+			}
+
+			if (tp.ver_tag < 1)
+			{
+				if (tp.content.empty()) // 空文章，直接失败。
+					return false;
+				tp.ver_tag = 1;
+			}
+			if (tp.ver_tag < 2)
+			{
+				tp.ver_tag = 2;
+			}
+
+			if (need_repair)
+				tp.to_file(p); // 重写入。
 			return true;
 		}
 		/// <summary>
@@ -258,6 +319,8 @@ namespace miao::core
 				return false;
 			if (!demand_directory(lib_dir / "pronunciations"))
 				return false;
+			if (!demand_directory(lib_dir / "passages"))
+				return false;
 
 			if (!demand_file(lib_dir / "raws.json"))
 				return false;
@@ -269,6 +332,10 @@ namespace miao::core
 			auto items_path = list_json_files(lib_dir / "items");
 			for (const auto& p : items_path)
 				demand_item(p);
+
+			auto passages_path = list_json_files(lib_dir / "passages");
+			for (const auto& p : passages_path)
+				demand_passage(p);
 			return true;
 		}
 	};
