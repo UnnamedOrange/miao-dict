@@ -245,7 +245,7 @@ namespace miao::core
 			return true;
 		}
 		/// <summary>
-		/// 要求制定路径是一个合法的库路径。该函数会尝试修复库中缺失的信息（如缺失的目录、文件）。
+		/// 要求指定路径是一个合法的库路径。该函数会尝试修复库中缺失的信息（如缺失的目录、文件）。
 		/// </summary>
 		/// <param name="id">指定路径</param>
 		/// <returns>如果返回 true，则保证此时库能够完全被正确加载。否则返回 false。</returns>

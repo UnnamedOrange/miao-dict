@@ -17,7 +17,10 @@ working_dir
 |  |  |--0                   # local
 |  |  |  |--items
 |  |  |  |  |--0.json
-|  |  |  |  |--1.json
+|  |  |  |  |--...
+|  |  |  |--passages
+|  |  |  |  |--0.json
+|  |  |  |  |--...
 |  |  |  |--pronunciations
 |  |  |  |  |--...           # TODO
 |  |  |  |--raws.json
