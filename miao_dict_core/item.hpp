@@ -7,6 +7,10 @@ namespace miao::core
 	class item : public serializable_base
 	{
 	public:
+		// 版本标记
+		static constexpr int latest_ver_tag = 1;
+		int ver_tag = latest_ver_tag;
+
 		// 基础数据
 		id_t id{};
 		std::u32string origin;
@@ -78,6 +82,7 @@ namespace miao::core
 		}
 		virtual void from_json(const Json::Value& value) override
 		{
+			ver_tag = 0;
 			try
 			{
 				Json::value_assign(id, value["id"]);
@@ -119,10 +124,13 @@ namespace miao::core
 				Json::value_assign(n_pause, value["n_pause"]);
 				Json::value_assign(n_pronounce, value["n_pronounce"]);
 				Json::value_assign(n_query, value["n_query"]);
+
+				ver_tag = 1;
 			}
 			catch (...)
 			{
-				throw deserialize_error("fail to translate the string into raw_item.");
+				if (!ver_tag)
+					throw deserialize_error("fail to translate the string into raw_item.");
 			}
 		}
 	};
@@ -130,6 +138,11 @@ namespace miao::core
 	class raw_item final : public serializable_base
 	{
 	public:
+		// 版本标记
+		static constexpr int latest_ver_tag = 1;
+		int ver_tag = latest_ver_tag;
+
+		// 数据域
 		std::u32string origin;
 		uint_t frequency{};
 
@@ -143,14 +156,17 @@ namespace miao::core
 		}
 		virtual void from_json(const Json::Value& value) override
 		{
+			ver_tag = 0;
 			try
 			{
 				Json::value_assign(frequency, value["frequency"]);
 				Json::value_assign(origin, value["origin"]);
+				ver_tag = 1;
 			}
 			catch (...)
 			{
-				throw deserialize_error("fail to translate the string into raw_item.");
+				if (!ver_tag)
+					throw deserialize_error("fail to translate the string into raw_item.");
 			}
 		}
 	};
