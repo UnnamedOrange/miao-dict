@@ -80,47 +80,45 @@ namespace miao::core
 		{
 			try
 			{
-				id = value["id"].asUInt64();
-				origin = utf_conv<char, char32_t>::convert(value["origin"].asCString());
+				Json::value_assign(id, value["id"]);
+				Json::value_assign(origin, value["origin"]);
 
 				variants.resize(value["variants"].size());
 				for (size_t i = 0; i < variants.size(); i++)
-					variants[i] = utf_conv<char, char32_t>::convert(
-						value["variants"][static_cast<Json::ArrayIndex>(i)].asCString());
+					Json::value_assign(variants[i], value["variants"][static_cast<Json::ArrayIndex>(i)]);
 
 				notations.resize(value["notations"].size());
 				for (size_t i = 0; i < notations.size(); i++)
-					notations[i] = utf_conv<char, char32_t>::convert(
-						value["notations"][static_cast<Json::ArrayIndex>(i)].asCString());
+					Json::value_assign(notations[i], value["notations"][static_cast<Json::ArrayIndex>(i)]);
 
 				translations.resize(value["translations"].size());
 				for (size_t i = 0; i < translations.size(); i++)
 				{
 					const Json::Value& node = value["translations"][static_cast<Json::ArrayIndex>(i)];
-					translations[i] = { node["id"].asUInt64(),
-						node["lib_id"].asUInt64(),
-						utf_conv<char, char32_t>::convert(node["tag"].asCString()),
-						utf_conv<char, char32_t>::convert(node["meaning"].asCString()) };
+					translations[i] = { std::get<id_t>(Json::value_cast(node["id"])),
+						std::get<id_t>(Json::value_cast(node["lib_id"])),
+						std::get<std::u32string>(Json::value_cast(node["tag"])),
+						std::get<std::u32string>(Json::value_cast(node["meaning"])) };
 				}
 
 				pronunciations.resize(value["pronunciations"].size());
 				for (size_t i = 0; i < pronunciations.size(); i++)
-					pronunciations[i] = value["pronunciations"][static_cast<Json::ArrayIndex>(i)].asUInt64();
+					Json::value_assign(pronunciations[i], value["pronunciations"][static_cast<Json::ArrayIndex>(i)]);
 
 				sentences.resize(value["sentences"].size());
 				for (size_t i = 0; i < sentences.size(); i++)
 				{
 					const Json::Value& node = value["sentences"][static_cast<Json::ArrayIndex>(i)];
-					sentences[i] = { node["id"].asUInt64(),
-						node["trans_id"].asUInt64() };
+					sentences[i] = { std::get<id_t>(Json::value_cast(node["id"])),
+						std::get<id_t>(Json::value_cast(node["trans_id"])) };
 				}
 
-				showing_time = value["showing_time"].asUInt64();
-				n_skips = value["n_skips"].asUInt64();
-				n_flick = value["n_flick"].asUInt64();
-				n_pause = value["n_pause"].asUInt64();
-				n_pronounce = value["n_pronounce"].asUInt64();
-				n_query = value["n_query"].asUInt64();
+				Json::value_assign(showing_time, value["showing_time"]);
+				Json::value_assign(n_skips, value["n_skips"]);
+				Json::value_assign(n_flick, value["n_flick"]);
+				Json::value_assign(n_pause, value["n_pause"]);
+				Json::value_assign(n_pronounce, value["n_pronounce"]);
+				Json::value_assign(n_query, value["n_query"]);
 			}
 			catch (...)
 			{
@@ -147,8 +145,8 @@ namespace miao::core
 		{
 			try
 			{
-				frequency = value["frequency"].asUInt64();
-				origin = utf_conv<char, char32_t>::convert(value["origin"].asCString());
+				Json::value_assign(frequency, value["frequency"]);
+				Json::value_assign(origin, value["origin"]);
 			}
 			catch (...)
 			{

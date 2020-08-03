@@ -14,6 +14,7 @@
 #include <filesystem>
 #include <mutex>
 #include <atomic>
+#include <variant>
 
 #include <json/json.h>
 
@@ -61,6 +62,46 @@ namespace Json
 			writer->write(v, &ss);
 		}
 		return std::u8string(reinterpret_cast<const char8_t*>(ss.str().c_str()));
+	}
+
+	using value_t = std::variant<std::monostate, long long, unsigned long long, double, std::u32string, bool, std::vector<Json::Value>, Json::Value>;
+	inline value_t value_cast(const Value& v)
+	{
+		switch (v.type())
+		{
+		case nullValue:
+			return std::monostate();
+		case intValue:
+			return v.asInt64();
+		case uintValue:
+			return v.asUInt64();
+		case realValue:
+			return v.asDouble();
+		case stringValue:
+			return miao::utf_conv<char, char32_t>::convert(v.asCString());
+		case booleanValue:
+			return v.asBool();
+		case arrayValue:
+		{
+			std::vector<Json::Value> ret(v.size());
+			for (size_t i = 0; i < ret.size(); i++)
+				ret[i] = v[static_cast<Json::ArrayIndex>(i)];
+			return ret;
+		}
+		case objectValue:
+			return v;
+		}
+		throw std::runtime_error("v.type() is invalid.");
+	}
+	template<typename T>
+	inline void value_assign(T& t, const value_t& v)
+	{
+		t = std::get<T>(v);
+	}
+	template<typename T>
+	inline void value_assign(T& t, const Json::Value& v)
+	{
+		value_assign(t, value_cast(v));
 	}
 }
 
