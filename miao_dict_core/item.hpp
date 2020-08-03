@@ -85,8 +85,8 @@ namespace miao::core
 			ver_tag = 0;
 			try
 			{
-				Json::value_assign(id, value["id"]);
 				Json::value_assign(origin, value["origin"]);
+				Json::value_assign(id, value["id"]);
 
 				variants.resize(value["variants"].size());
 				for (size_t i = 0; i < variants.size(); i++)
@@ -159,8 +159,8 @@ namespace miao::core
 			ver_tag = 0;
 			try
 			{
-				Json::value_assign(frequency, value["frequency"]);
 				Json::value_assign(origin, value["origin"]);
+				Json::value_assign(frequency, value["frequency"]);
 				ver_tag = 1;
 			}
 			catch (...)

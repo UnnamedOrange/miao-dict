@@ -103,12 +103,6 @@ namespace miao::core
 
 	private:
 		/// <summary>
-		/// 库 id 到库引用的映射。如果加载成功，这个映射一定非空，因为总存在一个本地库。该变量作为系统是否已初始化的判断依据。
-		/// </summary>
-		std::unordered_map<id_t, std::shared_ptr<library>> libraries;
-
-	private:
-		/// <summary>
 		/// 要求指定路径是一个存在的目录。
 		/// </summary>
 		/// <param name="path">指定的路径。</param>
@@ -128,10 +122,48 @@ namespace miao::core
 			}
 			return true;
 		}
+		/// <summary>
+		/// 要求指定路径是一个存在的文件。如果本身存在，则新建一个空文件。
+		/// </summary>
+		/// <param name="path">指定的路径。</param>
+		/// <returns>如果调用该函数后满足条件，则返回 true，否则返回 false。</returns>
+		static bool demand_file(std::filesystem::path path)
+		{
+			if (std::filesystem::exists(path) && std::filesystem::is_directory(path)) // 不是一个目录，失败。
+				return false;
+			try
+			{
+				if (!std::filesystem::exists(path))
+				{
+					std::ofstream _(path);
+					if (!std::filesystem::exists(path)) // 无法创建目录，失败。
+						return false;
+				}
+			}
+			catch (const std::filesystem::filesystem_error&)
+			{
+				return false;
+			}
+			return true;
+		}
+		/// <summary>
+		/// 列出目录下所有的 json 文件，按字典序排序。不会递归搜索。
+		/// </summary>
+		/// <param name="path">目录。</param>
+		static std::vector<std::filesystem::path> list_json_files(std::filesystem::path path)
+		{
+			std::vector<std::filesystem::path> ret;
+			for (auto& p : std::filesystem::directory_iterator(path))
+				if (!p.is_directory() && p.path().extension() == ".json")
+					ret.push_back(p.path());
+			std::sort(ret.begin(), ret.end());
+			return ret;
+		}
 	public:
 		/// <summary>
 		/// 在文件系统中初始化 miao_dict 系统。仅在第一次使用 miao_dict 时调用。如果重复调用且 force 指定为 true，只保证已经存在的系统不受影响，不保证文件夹下其他文件不受影响。
 		/// </summary>
+		/// <remarks>现在在调用 load 前会自动调用 init(true)。如果返回 false，则 load 直接失败。</remarks>
 		/// <param name="force">如果参数 force 为真，则在已经存在文件夹 "working_dir/miao_dict" 时仍然初始化整个系统；否则在这种情况下直接返回 false。</param>
 		/// <returns>如果成功初始化，则返回 true，否则返回 false。如果返回 false，则不保证已经创建文件的完整性。</returns>
 		bool init(bool force = false)
@@ -150,6 +182,93 @@ namespace miao::core
 			if (!demand_directory(sentence_dir()))
 				return false;
 
+			return true;
+		}
+
+	private:
+		/// <summary>
+		/// 库 id 到库引用的映射。如果加载成功，这个映射一定非空，因为总存在一个本地库。该变量作为系统是否已初始化的判断依据。
+		/// </summary>
+		std::unordered_map<id_t, std::shared_ptr<library>> libraries;
+	public:
+		/// <summary>
+		/// 加载所有库和附属信息到内存中。如果这个对象已经加载的信息非空，则无论函数是否成功，都将被全部抛弃。
+		/// </summary>
+		/// <returns>如果加载成功，返回 true；否则返回 false。</returns>
+		bool load()
+		{
+			// 创建基本的文件夹。
+			if (!init(true))
+				return false;
+
+			// 抛弃全部已经加载到内存中的库及附属信息。
+			libraries.clear();
+
+			// 加载本地库。
+			demand_library(0);
+
+			return true;
+		}
+		/// <summary>
+		/// 要求指定路径是一个合法的存有 item 的文件。该函数会尝试修复文件中缺失的信息（如新版本中的信息），并总是会重写这个文件。
+		/// </summary>
+		/// <param name="p">指定路径。</param>
+		/// <returns>如果返回 true，则保证此时文件内容能够完全被正确加载。否则返回 false。</returns>
+		bool demand_item(std::filesystem::path p)
+		{
+			item temp_item;
+			try
+			{
+				temp_item.from_file(p);
+			}
+			catch (const parse_error&) // 认为该文件损坏，直接失败。
+			{
+				return false;
+			}
+			catch (const deserialize_error&) // 在之后检查 ver_tag。
+			{
+
+			}
+			catch (const std::runtime_error&) // 未知的其他错误，直接失败。
+			{
+				return false;
+			}
+
+			if (temp_item.ver_tag < 1)
+			{
+				if (temp_item.origin.empty()) // 空单词，直接失败。
+					return false;
+				temp_item.id = std::stoi(p.filename().replace_extension()); // 修复 id。
+			}
+
+			temp_item.to_file(p); // 重写入。
+			return true;
+		}
+		/// <summary>
+		/// 要求制定路径是一个合法的库路径。该函数会尝试修复库中缺失的信息（如缺失的目录、文件）。
+		/// </summary>
+		/// <param name="id">指定路径</param>
+		/// <returns>如果返回 true，则保证此时库能够完全被正确加载。否则返回 false。</returns>
+		bool demand_library(id_t id)
+		{
+			auto lib_dir = library_dir(id);
+			if (!demand_directory(lib_dir))
+				return false;
+			if (!demand_directory(lib_dir / "items"))
+				return false;
+			if (!demand_directory(lib_dir / "pronunciations"))
+				return false;
+
+			if (!demand_file(lib_dir / "raws.json"))
+				return false;
+			if (!demand_file(lib_dir / "raws_items.json"))
+				return false;
+			if (!demand_file(lib_dir / "library.json"))
+				return false;
+
+			auto items_path = list_json_files(lib_dir / "items");
+			for (const auto& p : items_path)
+				demand_item(p);
 			return true;
 		}
 	};
