@@ -237,7 +237,9 @@ namespace miao::core
 			bool need_repair = ti.ver_tag != ti.latest_ver_tag;
 			try
 			{
-				ti.id = std::stoi(p.filename().replace_extension()); // 修复 id。
+				id_t nid = std::stoi(p.filename().replace_extension());
+				need_repair |= ti.id != nid;
+				ti.id = nid; // 修复 id。
 			}
 			catch (const std::invalid_argument&) // 文件名不表示一个有效 id。
 			{
@@ -283,7 +285,9 @@ namespace miao::core
 			bool need_repair = tp.ver_tag != tp.latest_ver_tag;
 			try
 			{
-				tp.id = std::stoi(p.filename().replace_extension()); // 修复 id。
+				id_t nid = std::stoi(p.filename().replace_extension());
+				need_repair |= tp.id != nid;
+				tp.id = nid; // 修复 id。
 			}
 			catch (const std::invalid_argument&) // 文件名不表示一个有效 id。
 			{
@@ -305,6 +309,11 @@ namespace miao::core
 				tp.to_file(p); // 重写入。
 			return true;
 		}
+		/// <summary>
+		/// 要求指定路径是一个合法的存有 raw_item 的文件。该函数会尝试修复文件中缺失的信息，并在尝试修复后会重写这个文件。
+		/// </summary>
+		/// <param name="p">指定路径。</param>
+		/// <returns>如果返回 true，则保证此时文件内容能够完全被正确加载。否则返回 false。</returns>
 		bool demand_raw_items(std::filesystem::path p)
 		{
 			Json::Value v;
@@ -368,6 +377,54 @@ namespace miao::core
 			return true;
 		}
 		/// <summary>
+		/// 要求指定路径是一个合法的存有库配置的文件。该函数会尝试修复文件中缺失的信息，并在尝试修复后会重写这个文件。
+		/// </summary>
+		/// <param name="p">指定路径。</param>
+		/// <returns>如果返回 true，则保证此时文件内容能够完全被正确加载。否则返回 false。</returns>
+		bool demand_library_config(std::filesystem::path p)
+		{
+			library tl;
+			try
+			{
+				tl.from_file(p);
+			}
+			catch (const parse_error&) // 认为该文件损坏，重新创建。
+			{
+
+			}
+			catch (const deserialize_error&) // 在之后检查 ver_tag。
+			{
+
+			}
+			catch (const std::runtime_error&) // 未知的其他错误，直接失败。
+			{
+				return false;
+			}
+
+			bool need_repair = tl.ver_tag != tl.latest_ver_tag;
+			try
+			{
+				id_t nid = std::stoi(p.parent_path().filename());
+				need_repair |= tl.id != nid;
+				tl.id = nid; // 修复 id。
+			}
+			catch (const std::invalid_argument&) // 路径名不表示一个有效 id。
+			{
+				return false;
+			}
+
+			if (tl.ver_tag < 1)
+			{
+				if (tl.lang.empty())
+					tl.lang = U"custom";
+				tl.ver_tag = 1;
+			}
+
+			if (need_repair)
+				tl.to_file(p); // 重写入。
+			return true;
+		}
+		/// <summary>
 		/// 要求指定路径是一个合法的库路径。该函数会尝试修复库中缺失的信息（如缺失的目录、文件）。
 		/// </summary>
 		/// <param name="id">指定路径</param>
@@ -399,6 +456,8 @@ namespace miao::core
 
 			if (!demand_raw_items(lib_dir / "raw_items.json"))
 				return false;
+
+			demand_library_config(lib_dir / "library.json");
 
 			return true;
 		}
