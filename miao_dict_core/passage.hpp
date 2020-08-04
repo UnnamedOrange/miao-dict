@@ -12,7 +12,7 @@ namespace miao::core
 		int ver_tag = latest_ver_tag;
 
 		// 数据域
-		id_t id;
+		id_t id{};
 		std::u32string content;
 
 		// 版本 2

@@ -206,9 +206,12 @@ namespace miao::core
 
 			// 加载本地库。
 			demand_library(0);
+			libraries[0] = std::make_shared<library>(load_library(0));
+			libraries[0]->tag = U"local";
 
 			return true;
 		}
+
 		/// <summary>
 		/// 要求指定路径是一个合法的存有 item 的文件。该函数会尝试修复文件中缺失的信息（如新版本中的信息），并在尝试修复后会重写这个文件。
 		/// </summary>
@@ -460,6 +463,95 @@ namespace miao::core
 			demand_library_config(lib_dir / "library.json");
 
 			return true;
+		}
+
+		/// <summary>
+		/// 给定存有 raw_item 的文件，加载所有的 raw_item。如果产生解析错误，会直接抛出异常；对于所有不正常的 raw_item，会直接跳过。需要先调用 demand_raw_items。
+		/// </summary>
+		/// <param name="p">指定文件的路径。</param>
+		/// <returns>存有 raw_item 的数组。</returns>
+		std::vector<raw_item> load_raw_items(std::filesystem::path p)
+		{
+			std::vector<raw_item> ret;
+			Json::Value v;
+			{
+				std::ifstream ifs(p);
+				ifs.seekg(0, std::ios::end);
+				size_t len = ifs.tellg();
+				ifs.seekg(0, std::ios::beg);
+				std::vector<char8_t> buf(len + 1);
+				ifs.read(reinterpret_cast<char*>(buf.data()), len);
+				v = Json::read(buf.data());
+			}
+
+			for (Json::ArrayIndex i = 0; i < v["raw_items"].size(); i++)
+			{
+				raw_item ri;
+				auto& rij = v["raw_items"][i];
+				try
+				{
+					ri.from_json(rij);
+				}
+				catch (...)
+				{
+					continue;
+				}
+				if (ri.ver_tag != ri.latest_ver_tag)
+					continue;
+				ret.push_back(ri);
+			}
+			return ret;
+		}
+		/// <summary>
+		/// 加载指定的库。应当先调用 demand_library。
+		/// </summary>
+		/// <param name="id">库 id。</param>
+		/// <returns>被加载的库对象。</returns>
+		library load_library(id_t id)
+		{
+			auto lib_dir = library_dir(id);
+			library ret;
+
+			ret.from_file(lib_dir / "library.json");
+
+			ret.items.clear();
+			auto items_path = list_json_files(lib_dir / "items");
+			for (const auto& p : items_path)
+			{
+				try
+				{
+					item ti;
+					ti.from_file(p);
+					if (ti.ver_tag != ti.latest_ver_tag)
+						continue;
+					ret.items[ti.id] = ti;
+				}
+				catch (...)
+				{
+					continue;
+				}
+			}
+
+			auto passages_path = list_json_files(lib_dir / "passages");
+			for (const auto& p : passages_path)
+			{
+				try
+				{
+					passage tp;
+					tp.from_file(p);
+					if (tp.ver_tag != tp.latest_ver_tag)
+						continue;
+					ret.passages.push_back(tp);
+				}
+				catch (...)
+				{
+					continue;
+				}
+			}
+
+			ret.raw_items = load_raw_items(lib_dir / "raw_items.json");
+
+			return ret;
 		}
 	};
 }

@@ -15,6 +15,7 @@
 #include <mutex>
 #include <atomic>
 #include <variant>
+#include <optional>
 
 #include <json/json.h>
 

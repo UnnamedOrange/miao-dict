@@ -11,10 +11,10 @@ namespace miao::core
 	public:
 		// 版本标记
 		static constexpr int latest_ver_tag = 1;
-		int ver_tag;
+		int ver_tag = latest_ver_tag;
 
 		// 库信息
-		id_t id;
+		id_t id{};
 		std::u32string tag;
 		std::u32string lang;
 
