@@ -305,6 +305,68 @@ namespace miao::core
 				tp.to_file(p); // 重写入。
 			return true;
 		}
+		bool demand_raw_items(std::filesystem::path p)
+		{
+			Json::Value v;
+			bool need_repair = false;
+			try
+			{
+				std::ifstream ifs(p);
+				ifs.seekg(0, std::ios::end);
+				size_t len = ifs.tellg();
+				ifs.seekg(0, std::ios::beg);
+				std::vector<char8_t> buf(len + 1);
+				ifs.read(reinterpret_cast<char*>(buf.data()), len);
+				v = Json::read(buf.data());
+			}
+			catch (...) // 无法解析。
+			{
+				v["raw_items"].resize(0);
+				need_repair = true;
+			}
+
+			if (v["raw_items"].type() != Json::arrayValue)
+			{
+				v["raw_items"].clear();
+				v["raw_items"].resize(0);
+				need_repair = true;
+			}
+
+			for (Json::ArrayIndex i = 0; i < v["raw_items"].size(); i++)
+			{
+				raw_item ri;
+				auto& rij = v["raw_items"][i];
+				try
+				{
+					ri.from_json(rij);
+				}
+				catch (const deserialize_error&) // 在之后检查 ver_tag。
+				{
+
+				}
+				catch (const std::runtime_error&) // 未知的其他错误，直接失败。
+				{
+					continue;
+				}
+
+				need_repair |= ri.ver_tag != ri.latest_ver_tag;
+
+				if (ri.ver_tag < 1)
+				{
+					if (ri.origin.empty())
+						continue;
+					ri.ver_tag = 1;
+				}
+			}
+
+			if (need_repair) // 重写入。
+			{
+				std::ofstream fs(p);
+				std::u8string str = Json::write(v);
+				fs.write(reinterpret_cast<char*>(str.data()), str.length());
+			}
+			return true;
+		}
 		/// <summary>
 		/// 要求指定路径是一个合法的库路径。该函数会尝试修复库中缺失的信息（如缺失的目录、文件）。
 		/// </summary>
@@ -322,9 +384,7 @@ namespace miao::core
 			if (!demand_directory(lib_dir / "passages"))
 				return false;
 
-			if (!demand_file(lib_dir / "raws.json"))
-				return false;
-			if (!demand_file(lib_dir / "raws_items.json"))
+			if (!demand_file(lib_dir / "raw_items.json"))
 				return false;
 			if (!demand_file(lib_dir / "library.json"))
 				return false;
@@ -336,6 +396,10 @@ namespace miao::core
 			auto passages_path = list_json_files(lib_dir / "passages");
 			for (const auto& p : passages_path)
 				demand_passage(p);
+
+			if (!demand_raw_items(lib_dir / "raw_items.json"))
+				return false;
+
 			return true;
 		}
 	};

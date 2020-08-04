@@ -23,7 +23,6 @@ working_dir
 |  |  |  |  |--...
 |  |  |  |--pronunciations
 |  |  |  |  |--...           # TODO
-|  |  |  |--raws.json
 |  |  |  |--raw_items.json
 |  |  |  |--library.json
 |  |  |--1                   # others
