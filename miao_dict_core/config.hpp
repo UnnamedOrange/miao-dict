@@ -98,11 +98,20 @@ namespace miao::core
 	public:
 		[[nodiscard]] std::filesystem::path working_dir() const
 		{
-			return std::filesystem::path(utf_conv<char, char32_t>::convert(Json::Value::operator[]("working_dir").asCString()));
+			return std::filesystem::path(std::get<std::u32string>(Json::value_cast(get("working_dir", ""))));
 		}
 		void working_dir(std::filesystem::path new_dir)
 		{
 			Json::Value::operator[]("working_dir") = utf_conv<char32_t, char>::convert(new_dir.u32string());
+		}
+
+		[[nodiscard]] std::u32string preferred_lang() const
+		{
+			return std::get<std::u32string>(Json::value_cast(get("preferred_lang", "zhs")));
+		}
+		void preferred_lang(std::u32string_view new_lang)
+		{
+			Json::Value::operator[]("preferred_lang") = utf_conv<char32_t, char>::convert(new_lang);
 		}
 	};
 }

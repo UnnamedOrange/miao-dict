@@ -221,7 +221,9 @@ namespace miao::core
 			if (!demand_library(0))
 				return false;
 			libraries[0] = std::make_shared<library>(load_library(0));
+			libraries[0]->lang = config::view()->preferred_lang();
 			libraries[0]->tag = U"local";
+			libraries[0]->to_file(library_dir(0) / "library.json");
 
 			// 加载其他库。
 			auto lib_dirs = list_directories(library_dir());
