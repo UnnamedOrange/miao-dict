@@ -590,5 +590,17 @@ namespace miao::core
 
 			return ret;
 		}
+
+	public:
+		/// <summary>
+		/// 返回一个未使用的库 id。总是应当在加载库后调用，否则抛出 std::runtime_error 异常。
+		/// </summary>
+		/// <returns></returns>
+		id_t get_free_library_id() const
+		{
+			if (libraries.empty())
+				throw std::runtime_error("call load() before get_free_library_id.");
+			return libraries.crbegin()->first;
+		}
 	};
 }
