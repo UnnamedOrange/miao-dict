@@ -429,7 +429,7 @@ namespace miao::core
 			}
 			catch (const parse_error&) // 认为该文件损坏，重新创建。
 			{
-
+				tl.ver_tag = 0;
 			}
 			catch (const deserialize_error&) // 在之后检查 ver_tag。
 			{
