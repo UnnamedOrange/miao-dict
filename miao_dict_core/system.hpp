@@ -600,7 +600,39 @@ namespace miao::core
 		{
 			if (libraries.empty())
 				throw std::runtime_error("call load() before get_free_library_id.");
-			return libraries.crbegin()->first;
+			return libraries.crbegin()->first + 1;
+		}
+		/// <summary>
+		/// 创建指定 id 的空库，如果库已经存在则失败。会生成所需要的文件。总是应当在加载库后调用，否则抛出 std::runtime_error 异常。
+		/// </summary>
+		/// <param name="id">库 id。如果是 std::nullopt，则使用 get_free_library_id 的结果。</param>
+		/// <param name="lang">语言标签。</param>
+		/// <param name="tag">库名。</param>
+		/// <returns>成功返回 true，失败返回 false。成功后，可以通过 libraries 进行访问。</returns>
+		bool create_library(std::optional<id_t> id, std::u32string_view lang, std::u32string_view tag)
+		{
+			if (libraries.empty())
+				throw std::runtime_error("call load() before create_library.");
+
+			library tl;
+			if (id)
+				tl.id = *id;
+			else
+				tl.id = get_free_library_id();
+
+			if (libraries.count(tl.id))
+				return false;
+
+			tl.lang = lang;
+			tl.tag = tag;
+
+			if (!demand_library(tl.id))
+				return false;
+
+			tl.to_file(library_dir(tl.id) / "library.json");
+
+			libraries[tl.id] = std::make_shared<library>(std::move(tl));
+			return true;
 		}
 	};
 }
