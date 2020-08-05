@@ -159,6 +159,19 @@ namespace miao::core
 			std::sort(ret.begin(), ret.end());
 			return ret;
 		}
+		/// <summary>
+		/// 列出目录下所有的文件夹，按字典序排序。不会递归搜索。
+		/// </summary>
+		/// <param name="path">目录。</param>
+		static std::vector<std::filesystem::path> list_directories(std::filesystem::path path)
+		{
+			std::vector<std::filesystem::path> ret;
+			for (auto& p : std::filesystem::directory_iterator(path))
+				if (p.is_directory())
+					ret.push_back(p.path());
+			std::sort(ret.begin(), ret.end());
+			return ret;
+		}
 	public:
 		/// <summary>
 		/// 在文件系统中初始化 miao_dict 系统。仅在第一次使用 miao_dict 时调用。如果重复调用且 force 指定为 true，只保证已经存在的系统不受影响，不保证文件夹下其他文件不受影响。
@@ -189,7 +202,7 @@ namespace miao::core
 		/// <summary>
 		/// 库 id 到库引用的映射。如果加载成功，这个映射一定非空，因为总存在一个本地库。该变量作为系统是否已初始化的判断依据。
 		/// </summary>
-		std::unordered_map<id_t, std::shared_ptr<library>> libraries;
+		std::map<id_t, std::shared_ptr<library>> libraries;
 	public:
 		/// <summary>
 		/// 加载所有库和附属信息到内存中。如果这个对象已经加载的信息非空，则无论函数是否成功，都将被全部抛弃。
@@ -205,13 +218,36 @@ namespace miao::core
 			libraries.clear();
 
 			// 加载本地库。
-			demand_library(0);
+			if (!demand_library(0))
+				return false;
 			libraries[0] = std::make_shared<library>(load_library(0));
 			libraries[0]->tag = U"local";
+
+			// 加载其他库。
+			auto lib_dirs = list_directories(library_dir());
+			for (const auto& p : lib_dirs)
+			{
+				id_t id{};
+				try
+				{
+					id = std::stoi(p.filename());
+				}
+				catch (const std::invalid_argument&)
+				{
+					continue;
+				}
+
+				if (!id)
+					continue;
+				if (!demand_library(id))
+					continue;
+				libraries[id] = std::make_shared<library>(load_library(id));
+			}
 
 			return true;
 		}
 
+	private:
 		/// <summary>
 		/// 要求指定路径是一个合法的存有 item 的文件。该函数会尝试修复文件中缺失的信息（如新版本中的信息），并在尝试修复后会重写这个文件。
 		/// </summary>
@@ -502,6 +538,7 @@ namespace miao::core
 			}
 			return ret;
 		}
+	public:
 		/// <summary>
 		/// 加载指定的库。应当先调用 demand_library。
 		/// </summary>

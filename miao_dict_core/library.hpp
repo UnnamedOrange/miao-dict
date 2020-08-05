@@ -19,7 +19,7 @@ namespace miao::core
 		std::u32string lang;
 
 		// dict
-		std::unordered_map<id_t, item> items;
+		std::map<id_t, item> items;
 		std::vector<raw_item> raw_items;
 
 		// raw
