@@ -145,7 +145,7 @@ namespace miao::core
 			fs.read(reinterpret_cast<char*>(buf.data()), len);
 			from_string(buf.data());
 		}
-		void to_file(std::filesystem::path filename)
+		void to_file(std::filesystem::path filename) const
 		{
 			filename.make_preferred();
 			std::ofstream fs(filename);

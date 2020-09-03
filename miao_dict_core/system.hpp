@@ -636,5 +636,29 @@ namespace miao::core
 			libraries[tl.id] = std::make_shared<library>(std::move(tl));
 			return true;
 		}
+
+	public:
+		/// <summary>
+		/// 新建或替换库中的 item。如果库不存在则失败。会生成所需要的文件。总是应当在加载库后调用，否则抛出 std::runtime_error 异常。
+		/// </summary>
+		/// <param name="lib_id">库 id。</param>
+		/// <param name="it">item 对象。</param>
+		/// <returns>成功返回 true，失败返回 false。</returns>
+		bool update_item(id_t lib_id, const item& it)
+		{
+			if (libraries.empty())
+				throw std::runtime_error("call load() before update_item.");
+
+			if (!libraries.count(lib_id))
+				return false;
+
+			auto& lib = libraries[lib_id];
+			auto path = library_dir(lib->id) / "items" / (std::to_string(it.id) + ".json");
+			demand_item(path);
+			it.to_file(path);
+			lib->items[it.id] = it;
+
+			return true;
+		}
 	};
 }
