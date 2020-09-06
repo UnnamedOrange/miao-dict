@@ -5,3 +5,9 @@
 #else
 #define __stdge17 1
 #endif
+
+#if _MSVC_LANG
+#define __windows 1
+#else
+#define __unix 1
+#endif
