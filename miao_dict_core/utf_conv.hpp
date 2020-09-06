@@ -18,6 +18,12 @@ namespace std
 }
 #endif
 
+#if __windows
+#include <Windows.h>
+#undef min
+#undef max
+#endif
+
 namespace miao
 {
 	/// <summary>
@@ -183,4 +189,60 @@ namespace miao
 	[[nodiscard]] inline std::u8string operator"" _u8(const char32_t* _Str, size_t _Len) {
 		return utf_conv<char32_t, char8_t>::convert(std::u32string_view(_Str, _Len));
 	}
+
+#if __windows
+	/// <summary>
+	/// 从 UTF-8 转换到 wstring（仅 Windows）。
+	/// </summary>
+	/// <typeparam name="char_or_char8_t">char 或者 char8_t（C++20）。</typeparam>
+	template <typename char_or_char8_t>
+	class utf_conv<char_or_char8_t, wchar_t>
+	{
+	public:
+		[[nodiscard]] static std::wstring convert(std::u8string_view src)
+#if __stdge20
+			requires std::is_same_v<char_or_char8_t, char> || std::is_same_v<char_or_char8_t, char8_t>
+#endif
+		{
+#if !__stdge20
+			static_assert(std::is_same_v<char_or_char8_t, char>, "src_t and des_t is invalid.");
+#endif
+
+			int length = MultiByteToWideChar(CP_UTF8, NULL,
+				reinterpret_cast<LPCCH>(src.data()), int(src.length()), nullptr, NULL);
+			std::wstring ret(length, 0);
+			if (length != MultiByteToWideChar(CP_UTF8, NULL,
+				reinterpret_cast<LPCCH>(src.data()), int(src.length()), ret.data(), int(ret.length())))
+				throw std::runtime_error("fail to MultiByteToWideChar");
+			return ret;
+		}
+	};
+	/// <summary>
+	/// 从 wstring 转换到 UTF-8（仅 Windows）。
+	/// </summary>
+	/// <typeparam name="char_or_char8_t">char 或者 char8_t（C++20）。</typeparam>
+	template <typename char_or_char8_t>
+	class utf_conv<wchar_t, char_or_char8_t>
+	{
+	public:
+		[[nodiscard]] static std::u8string convert(std::wstring_view src)
+#if __stdge20
+			requires std::is_same_v<char_or_char8_t, char> || std::is_same_v<char_or_char8_t, char8_t>
+#endif
+		{
+#if !__stdge20
+			static_assert(std::is_same_v<char_or_char8_t, char>, "src_t and des_t is invalid.");
+#endif
+
+			int length = WideCharToMultiByte(CP_UTF8, NULL,
+				reinterpret_cast<LPCWCH>(src.data()), int(src.length()), nullptr, NULL, nullptr, FALSE);
+			std::u8string ret(length, 0);
+			if (length != WideCharToMultiByte(CP_UTF8, NULL,
+				reinterpret_cast<LPCWCH>(src.data()), int(src.length()),
+				reinterpret_cast<LPSTR>(ret.data()), int(ret.length()), nullptr, FALSE))
+				throw std::runtime_error("fail to WideCharToMultiByte");
+			return ret;
+		}
+	};
+#endif
 }
